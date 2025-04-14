@@ -1532,12 +1532,12 @@ class DocString(object):
         elem_idx = 0
         reading = 'param'
         elems[elem_idx] = {'type': '', 'param': '', 'default': ''}
-        inside = None
+        inside = []
         end_inside = {'(': ')', '{': '}', '[': ']', "'": "'", '"': '"'}
         for c in txt[start:end_start]:
-            if (inside and end_inside[inside] != c) or (not inside and c in end_inside.keys()):
-                if not inside:
-                    inside = c
+            if (inside and end_inside.get(inside[-1]) != c) or (not inside and c in end_inside.keys()):
+                if c in end_inside.keys():
+                    inside.append(c) 
                 if reading == 'type':
                     elems[elem_idx]['type'] += c
                 elif reading == 'default':
@@ -1546,8 +1546,8 @@ class DocString(object):
                     # FIXME: this should not happen!
                     raise Exception("unexpected nested element after "+str(inside)+" while reading "+reading)
                 continue
-            if inside and c == end_inside[inside]:
-                inside = None
+            if inside and c == end_inside[inside[-1]]:
+                inside.pop()                
             if reading == 'param':
                 if c not in ': ,=':
                     elems[elem_idx]['param'] += c
